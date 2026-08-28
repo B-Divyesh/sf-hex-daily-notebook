@@ -1,86 +1,92 @@
-# Hex Daily Notebook — build handoff
+# Hex Daily Notebook — verification handoff
 
-Work order: `hex-daily-notebook-build-1`
+Work order: `hex-daily-notebook-verify-2`
 
-Completed: 2026-08-28
+Verified: 2026-08-28 UTC
 
-Artifact: static PWA, Vite + vanilla TypeScript, output `dist/`
+Candidate: `35ec57899f22b6778ecf59d7e6c900e9a19ecf2a`
 
-## What shipped
+Live URL: <https://hex-daily-notebook.sociobot.in>
 
-- A deterministic daily 19-cell hex deduction puzzle with an original rule set:
-  shade seven connected cells while brass clue pins count adjacent shaded cells.
-- A generator that enumerates the connected seven-cell solution space and adds
-  clues until the target is provably unique. It is deterministic by local date
-  and requires no server or daily content download.
-- Complete touch/mouse play with blank → filled → × cell states, freehand pencil
-  strokes across the whole sheet, drag erasing, clear-pencil, and reversible undo.
-- Complete keyboard play: Tab/arrow navigation, Space/Enter marking, F/P/E tool
-  shortcuts, U undo, and ? instructions.
-- Local progress, strokes, completion, and timer persistence with explicit
-  storage-error feedback. No account, analytics, cookies, external scripts,
-  external fonts, or network data storage.
-- A 21-puzzle archive released after a seven-day delay, future/recent/invalid-date
-  error states, an offline state, spoiler-free result copying, and `/privacy`
-  and `/terms` routes.
-- Installable offline PWA with a versioned Workbox shell cache, navigation
-  fallback, update behavior, web manifest, SVG app icon, and Azure Static Web
-  Apps routing/security configuration.
-- Product-specific blueprint visual system in `.factory/design.md`, including
-  palette, typography, spacing, interaction, motion/reduced-motion, and asset
-  provenance.
-- Original generated blueprint still-life: reviewed source and prompt in
-  `assets/src/`; 900×600 AVIF (22 KB) and WebP fallback (45 KB) in
-  `public/assets/`.
+## Verdict: FAIL
 
-## Run and verify
+The live deployment matches the candidate byte-for-byte and the main product
+flow works on desktop, 390 px mobile, keyboard, reduced-motion, and offline
+PWA reload. It is not ready for acceptance because the local-first failure
+path can silently lose work: a storage quota failure is overwritten by a
+success message, and the mark disappears on reload. Malformed saved stroke
+data also raises an uncaught page error with no recovery path.
 
-```sh
-npm install
-npm test
-npm run build
-npm run test:e2e
-npm run preview
+The full evidence and defect list are in `.factory/verification.md`.
+
+## Verification completed
+
+- Clean locked install at the candidate commit
+- 3/3 unit tests
+- TypeScript check and exact Vite production build
+- 12/12 repository Playwright tests across desktop and 390×844 mobile
+- Independent live desktop/mobile end-to-end play, invalid inputs, archive
+  boundaries, persistence, completion, share, keyboard, dialogs, and focus
+- Live axe WCAG A/AA: 0 violations and 0 serious/critical findings
+- Live PWA install/update inspection and offline mobile reload
+- Live request-origin, cookie, local-storage, response-header, and cache checks
+- Candidate/live SHA-256 comparison for HTML, JS, CSS, SW, and manifest
+- Lighthouse 12.2.1 live mobile audit
+- 365-date uniqueness/connectivity sweep
+- Storage quota, malformed-state, and 1,201-stroke boundary checks
+
+## Gate results
+
+```text
+npm ci                  PASS
+npm test                PASS (3/3)
+npm run build           PASS
+npm run test:e2e        PASS (12/12)
+npm audit --omit=dev    PASS (0 vulnerabilities)
+npm audit               FAIL (1 moderate, 1 high, 1 critical; dev only)
 ```
 
-- `npm test`: 3/3 unit tests pass, including deterministic generation,
-  uniqueness across a 31-day sample, connected traces, and date validation.
-- `npm run build`: passes TypeScript and creates `dist/index.html`.
-- `npm run test:e2e`: 12/12 Playwright checks pass across desktop Chromium and
-  a 390×844 mobile Chromium viewport. Coverage includes console errors, keyboard
-  and pointer pencil input, local restore, complete solve/reload, axe WCAG A/AA,
-  archive/legal routes, and an actual service-worker offline reload.
-- `npm audit --omit=dev`: 0 production dependency vulnerabilities.
-- Production asset budget: app JS 23.40 KB + Workbox helper 5.71 KB; CSS
-  10.90 KB; largest shipped image 45 KB. All are well under the static-product
-  budgets (200 KB JS, 50 KB CSS, 300 KB hero).
+No lint script or lint configuration exists.
 
-## Lighthouse-class verification
+## Lighthouse and budgets
 
-Lighthouse 12.2.1, mobile simulated throttling, production preview,
-`/?day=2026-08-14`:
+Live simulated mobile results: performance 95, accessibility 100, best
+practices 100, SEO 100, FCP 1.1 s, LCP 1.4 s, TBT 270 ms, CLS 0, 38 KiB
+transfer. A 4× CPU-throttled interaction measured 80 ms. Built app JS plus its
+registration helper is 29,145 bytes, CSS is 10,903 bytes, there are no fonts,
+and the largest image is 45,184 bytes. All size and key rendering/interaction
+budgets pass.
 
-- Performance: 100
-- Accessibility: 100
-- Best practices: 100
-- SEO: 100
-- FCP: 1.0 s
-- LCP: 1.4 s
-- Total blocking time: 40 ms
-- CLS: 0
+## Defects by severity
 
-Automated axe checks found no serious or critical WCAG A/AA violations. Manual
-visual review covered 1440px desktop and 390px mobile, visible focus, pointer
-targets, non-color clues/states, and reduced-motion CSS.
+Medium:
 
-## Known gaps and next steps
+1. Storage quota errors are immediately hidden by success feedback and work is
+   lost after reload; malformed stroke state causes an uncaught error.
+2. Hashed live assets receive only `max-age=30, must-revalidate`, not long-lived
+   immutable caching.
+3. The development/test dependency audit has moderate, high, and critical
+   findings, including direct Vite and Vitest dependencies; production audit
+   remains clean.
 
-- Progress is intentionally device-local and can be lost if browser site data is
-  cleared; there is no cross-device sync.
-- The success metric cannot be measured automatically because the product ships
-  without analytics or identifiers. Any validation should use opt-in research,
-  not covert telemetry.
-- Offline play begins after one successful online visit has cached the shell.
-- The archive currently exposes the latest 21 eligible dates. Puzzle generation
-  supports any valid earlier date, so expanding the visible range is a small UI
-  change if players ask for it.
+Low:
+
+1. Brand and footer legal links are below the 44×44 target-size baseline.
+2. The local pencil state silently truncates above 1,200 strokes.
+3. Four exact daily-puzzle repeats occur in a 365-date 2026 sweep.
+4. Live responses lack CSP and anti-framing policy.
+5. Arrow navigation maps four direct hex directions rather than all six stated
+   in the visual thesis; all cells remain reachable.
+
+## Required next steps
+
+1. Make save failures persistent and truthful in the UI, validate every loaded
+   stroke/point field, and offer safe reset/recovery for unusable state.
+2. Add automated quota-denial and malformed-storage tests.
+3. Configure immutable year-long caching for content-hashed assets while
+   retaining short revalidation for HTML and `sw.js`.
+4. Upgrade Vite/Vitest to patched compatible releases and rerun all gates.
+5. Address the low-severity contract gaps and request a fresh independent
+   verification.
+
+No product code was modified during this verification.
