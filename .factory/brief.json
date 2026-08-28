@@ -1,0 +1,8 @@
+{
+  "slug": "hex-daily-notebook",
+  "title": "Hex Daily Notebook",
+  "artifact_class": "static-web",
+  "user": "People who enjoy a short free web puzzle each day and prefer pen-like marks and spatial grids.",
+  "smallest_useful_product": "A static PWA serving one deterministic daily hex deduction puzzle, an unlimited local pencil layer with eraser, keyboard alternatives, archive after a delay, and no sign-in.",
+  "monetization": "free"
+}
