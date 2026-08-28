@@ -34,9 +34,11 @@ npm run test:e2e
 ```
 
 `npm test` verifies deterministic generation, connected traces, strict date
-handling, and unique solutions across a sample month. The browser suite uses
-Playwright 1.58.2 for desktop and 390px mobile interaction, persistence,
-completion, console, and axe accessibility checks.
+handling, fresh unique solutions across a full year, local-save validation,
+and deployment response policy. The browser suite uses Playwright 1.58.2 for
+desktop and 390px mobile interaction, persistence and recovery, completion,
+six-neighbor keyboard navigation, offline use, console safety, and axe
+accessibility checks.
 
 The exact production build command is `npm run build`. Static output lands in
 `dist/` with `dist/index.html` at its root. Preview it with `npm run preview`.

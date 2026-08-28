@@ -118,6 +118,40 @@ function makeTarget(seed: number): number {
   return mask;
 }
 
+type YearTargets = { next: Date; used: Set<number> };
+const targetByDate = new Map<string, number>();
+const yearTargets = new Map<number, YearTargets>();
+
+/** Keep the original date seed unless it repeats a target already used that year. */
+function targetForDate(date: string): number {
+  const cached = targetByDate.get(date);
+  if (cached !== undefined) return cached;
+
+  const selected = parseDateKey(date)!;
+  const year = selected.getFullYear();
+  let sequence = yearTargets.get(year);
+  if (!sequence) {
+    sequence = { next: new Date(year, 0, 1), used: new Set() };
+    yearTargets.set(year, sequence);
+  }
+
+  while (dateKey(sequence.next) <= date) {
+    const key = dateKey(sequence.next);
+    let attempt = 0;
+    let target: number;
+    do {
+      const suffix = attempt === 0 ? '' : `:retry-${attempt}`;
+      target = makeTarget(hash(`hex-daily-notebook:${key}:v1${suffix}`));
+      attempt += 1;
+    } while (sequence.used.has(target));
+    sequence.used.add(target);
+    targetByDate.set(key, target);
+    sequence.next = addDays(sequence.next, 1);
+  }
+
+  return targetByDate.get(date)!;
+}
+
 export function popcount(mask: number): number {
   let value = mask;
   let count = 0;
@@ -141,7 +175,7 @@ export function generatePuzzle(date: string): Puzzle {
   if (!parseDateKey(date)) throw new Error('Invalid puzzle date');
   const seed = hash(`hex-daily-notebook:${date}:v1`);
   const rng = random(seed ^ 0xa5a5a5a5);
-  const targetMask = makeTarget(seed);
+  const targetMask = targetForDate(date);
   const clues = new Map<number, number>();
   let candidates = allConnectedMasks();
   const available = CELLS.map((_, index) => index).filter((index) => !(targetMask & (1 << index)));

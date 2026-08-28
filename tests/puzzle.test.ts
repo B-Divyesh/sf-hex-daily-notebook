@@ -23,6 +23,20 @@ describe('daily puzzle generator', () => {
     }
   });
 
+  it('keeps every 2026 daily trace fresh and uniquely solvable', () => {
+    const targets = new Set<number>();
+    const signatures = new Set<string>();
+    for (let date = new Date(2026, 0, 1); date.getFullYear() === 2026; date = addDays(date, 1)) {
+      const puzzle = generatePuzzle(dateKey(date));
+      const signature = `${puzzle.targetMask}:${JSON.stringify([...puzzle.clues].sort((a, b) => a[0] - b[0]))}`;
+      targets.add(puzzle.targetMask);
+      signatures.add(signature);
+      expect(puzzle.solutionCount).toBe(1);
+    }
+    expect(targets.size).toBe(365);
+    expect(signatures.size).toBe(365);
+  });
+
   it('handles local calendar dates strictly', () => {
     expect(parseDateKey('2026-02-29')).toBeNull();
     expect(dateKey(addDays(new Date(2026, 0, 31), 1))).toBe('2026-02-01');

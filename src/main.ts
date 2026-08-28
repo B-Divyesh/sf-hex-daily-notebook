@@ -4,15 +4,9 @@ import {
   CELLS, TRACE_SIZE, addDays, dateKey, generatePuzzle,
   isSolved, parseDateKey, popcount, type Puzzle
 } from './puzzle';
+import { loadState, type Point, type SavedState } from './storage';
 
 type Mode = 'fill' | 'pencil' | 'eraser';
-type Point = { x: number; y: number };
-type SavedState = {
-  marks: number[];
-  strokes: Point[][];
-  elapsed: number;
-  completed: boolean;
-};
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const today = new Date();
@@ -49,7 +43,7 @@ function dialogs(): string {
   const archiveItems = Array.from({ length: 21 }, (_, index) => {
     const date = addDays(today, -7 - index);
     const key = dateKey(date);
-    const saved = readState(key);
+    const saved = readState(key).state;
     const label = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
     return `<li><a class="archive-link" href="/?day=${key}"><span>${label}</span>${saved.completed ? '<span class="archive-done" aria-label="Completed">✓</span>' : ''}</a></li>`;
   }).join('');
@@ -66,7 +60,7 @@ function dialogs(): string {
           <li>A brass pin tells you how many of its neighboring cells are shaded. The pin itself is never shaded.</li>
           <li>Use × marks and the free pencil layer to reason. They do not count as answers.</li>
         </ol>
-        <p><strong>Keyboard:</strong> Tab into the grid, move with arrow keys, and press Space to cycle blank → filled → ×. Press F, P, or E for tools and U to undo.</p>
+        <p><strong>Keyboard:</strong> Tab into the grid, move to all six neighbors with arrow keys (hold Shift with Up or Down for the opposite diagonal), and press Space to cycle blank → filled → ×. Press F, P, or E for tools and U to undo.</p>
       </div>
     </dialog>`;
 }
@@ -101,22 +95,7 @@ function errorPage(message: string): void {
 
 function storageKey(date: string): string { return `hex-notebook:v1:${date}`; }
 
-function freshState(): SavedState {
-  return { marks: Array(CELLS.length).fill(0), strokes: [], elapsed: 0, completed: false };
-}
-
-function readState(date: string): SavedState {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(storageKey(date)) || 'null') as Partial<SavedState> | null;
-    if (!parsed || !Array.isArray(parsed.marks) || parsed.marks.length !== CELLS.length) return freshState();
-    return {
-      marks: parsed.marks.map((mark) => mark === 1 || mark === 2 ? mark : 0),
-      strokes: Array.isArray(parsed.strokes) ? parsed.strokes.slice(0, 1200) as Point[][] : [],
-      elapsed: typeof parsed.elapsed === 'number' ? Math.max(0, parsed.elapsed) : 0,
-      completed: parsed.completed === true
-    };
-  } catch { return freshState(); }
-}
+function readState(date: string) { return loadState(localStorage, storageKey(date)); }
 
 function bindDialogs(): void {
   const archive = document.querySelector<HTMLDialogElement>('#archive-dialog');
@@ -174,7 +153,8 @@ function formatDateShort(date: Date): string {
 function gamePage(date: string): void {
   const selectedDate = parseDateKey(date)!;
   const puzzle = generatePuzzle(date);
-  let state = readState(date);
+  const loaded = readState(date);
+  let state = loaded.state;
   let mode: Mode = 'fill';
   let runtimeStarted: number | null = null;
   let timerId: number | undefined;
@@ -202,10 +182,11 @@ function gamePage(date: string): void {
             <div class="status-row"><span>Issue</span><strong>${date === todayKey ? 'Today' : formatDateShort(selectedDate)}</strong></div>
           </div>
           <button id="check" class="action-button">Check trace</button>
-          <p class="keyboard-note">Keyboard: arrows move, <kbd>Space</kbd> marks, <kbd>U</kbd> undoes, <kbd>?</kbd> opens rules.</p>
+          <p class="keyboard-note">Keyboard: arrows move; <kbd>Shift</kbd> + ↑/↓ reaches the opposite diagonals. <kbd>Space</kbd> marks, <kbd>U</kbd> undoes, <kbd>?</kbd> opens rules.</p>
         </aside>
         <section class="board-panel" aria-label="Puzzle board">
           <div class="board-topline"><p>FIG. 01 · POINT-TOP HEX FIELD</p><p id="mode-label">FILL MODE</p></div>
+          <div id="storage-warning" class="storage-warning" role="alert" hidden><span id="storage-warning-text"></span><button id="storage-warning-action" class="warning-action" type="button">Retry save</button></div>
           <div id="live-status" class="live-status" role="status" aria-live="polite">The sheet is ready. Fill, cross out, or sketch a note.</div>
           <div class="board-wrap">${boardMarkup(puzzle, state)}</div>
           <p class="board-caption">Brass pins are clues, not answer cells. A trace is connected when every filled cell joins through a shared edge.</p>
@@ -228,15 +209,33 @@ function gamePage(date: string): void {
   const checkButton = document.querySelector<HTMLButtonElement>('#check')!;
   const completion = document.querySelector<HTMLElement>('#completion')!;
   const timer = document.querySelector<HTMLElement>('#timer')!;
+  const storageWarning = document.querySelector<HTMLDivElement>('#storage-warning')!;
+  const storageWarningText = document.querySelector<HTMLSpanElement>('#storage-warning-text')!;
+  const storageWarningAction = document.querySelector<HTMLButtonElement>('#storage-warning-action')!;
 
   function announce(message: string, kind: '' | 'success' | 'error' = ''): void {
     status.textContent = message;
     status.className = `live-status ${kind}`.trim();
   }
 
-  function save(): void {
-    try { localStorage.setItem(storageKey(date), JSON.stringify(state)); }
-    catch { announce('Your browser could not save these marks. Keep this tab open to preserve them.', 'error'); }
+  function showStorageWarning(message: string, action: 'retry' | 'dismiss'): void {
+    storageWarningText.textContent = message;
+    storageWarningAction.textContent = action === 'retry' ? 'Retry save' : 'Dismiss';
+    storageWarningAction.dataset.action = action;
+    storageWarning.hidden = false;
+  }
+
+  function save(): boolean {
+    try {
+      localStorage.setItem(storageKey(date), JSON.stringify(state));
+      if (storageWarningAction.dataset.action === 'retry') storageWarning.hidden = true;
+      return true;
+    } catch {
+      const message = 'Changes in this tab are not saved. Keep this tab open, free browser storage, then retry.';
+      showStorageWarning(message, 'retry');
+      announce(message, 'error');
+      return false;
+    }
   }
 
   function checkpoint(): void {
@@ -304,9 +303,9 @@ function gamePage(date: string): void {
     pushHistory();
     state.marks[index] = (state.marks[index] + 1) % 3;
     startClock();
-    save();
+    const saved = save();
     updateBoard();
-    announce(state.marks[index] === 1 ? `Cell ${index + 1} filled.` : state.marks[index] === 2 ? `Cell ${index + 1} marked ×.` : `Cell ${index + 1} cleared.`);
+    if (saved) announce(state.marks[index] === 1 ? `Cell ${index + 1} filled.` : state.marks[index] === 2 ? `Cell ${index + 1} marked ×.` : `Cell ${index + 1} cleared.`);
   }
 
   function setMode(nextMode: Mode): void {
@@ -323,7 +322,11 @@ function gamePage(date: string): void {
     cell.addEventListener('keydown', (event) => {
       const index = Number(cell.dataset.cell);
       if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); cycleCell(index); return; }
-      const direction: Record<string, [number, number]> = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+      const direction: Record<string, [number, number]> = {
+        ArrowLeft: [-1, 0], ArrowRight: [1, 0],
+        ArrowUp: event.shiftKey ? [1, -1] : [0, -1],
+        ArrowDown: event.shiftKey ? [-1, 1] : [0, 1]
+      };
       if (!direction[event.key]) return;
       event.preventDefault();
       const [dq, dr] = direction[event.key];
@@ -369,7 +372,11 @@ function gamePage(date: string): void {
     } else eraseAt(point);
     renderStrokes();
   });
-  const finishDrawing = () => { if (drawing) { drawing = false; save(); announce(mode === 'pencil' ? 'Pencil stroke saved on this device.' : 'Pencil stroke erased.'); } };
+  const finishDrawing = () => {
+    if (!drawing) return;
+    drawing = false;
+    if (save()) announce(mode === 'pencil' ? 'Pencil stroke saved on this device.' : 'Pencil stroke erased.');
+  };
   svg.addEventListener('pointerup', finishDrawing);
   svg.addEventListener('pointercancel', finishDrawing);
 
@@ -378,11 +385,13 @@ function gamePage(date: string): void {
     if (!previous) return;
     state = previous;
     undoButton.disabled = history.length === 0;
-    save(); updateBoard(); announce('Last mark undone.');
+    const saved = save(); updateBoard();
+    if (saved) announce('Last mark undone.');
   });
   document.querySelector('#clear-pencil')!.addEventListener('click', () => {
     if (!state.strokes.length) { announce('The pencil layer is already clear.'); return; }
-    pushHistory(); state.strokes = []; save(); updateBoard(); announce('Pencil layer cleared. Undo is available.');
+    pushHistory(); state.strokes = []; const saved = save(); updateBoard();
+    if (saved) announce('Pencil layer cleared. Undo is available.');
   });
 
   checkButton.addEventListener('click', () => {
@@ -391,9 +400,9 @@ function gamePage(date: string): void {
     if (isSolved(mask, puzzle)) {
       if (runtimeStarted !== null) { state.elapsed += Math.floor((Date.now() - runtimeStarted) / 1000); runtimeStarted = null; }
       if (timerId !== undefined) window.clearInterval(timerId);
-      state.completed = true; save(); updateBoard();
+      state.completed = true; const saved = save(); updateBoard();
       document.querySelector('#final-time')!.textContent = formatTime(state.elapsed);
-      announce('Trace confirmed. Every clue agrees and all seven cells connect.', 'success');
+      if (saved) announce('Trace confirmed. Every clue agrees and all seven cells connect.', 'success');
       completion.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
     } else {
       const filled = popcount(mask);
@@ -419,8 +428,22 @@ function gamePage(date: string): void {
   function updateNetwork(): void { document.querySelector('#offline-banner')?.classList.toggle('visible', !navigator.onLine); }
   window.addEventListener('online', updateNetwork); window.addEventListener('offline', updateNetwork); updateNetwork();
   window.addEventListener('beforeunload', checkpoint);
+  storageWarningAction.addEventListener('click', () => {
+    if (storageWarningAction.dataset.action === 'dismiss') {
+      storageWarning.hidden = true;
+    } else if (save()) {
+      announce('Your latest changes are now saved on this device.', 'success');
+    }
+  });
   updateBoard();
-  if (state.completed) { checkButton.disabled = true; announce('This drawing is complete. Your notes are still available.', 'success'); }
+  if (loaded.unreadable) {
+    showStorageWarning('Browser storage could not be read. Changes may last only while this tab stays open.', 'retry');
+  } else if (loaded.repaired) {
+    if (save()) showStorageWarning('Damaged saved data was reset safely. Valid progress was preserved where possible.', 'dismiss');
+  } else if (state.completed) {
+    checkButton.disabled = true;
+    announce('This drawing is complete. Your notes are still available.', 'success');
+  }
 }
 
 function formatTime(seconds: number): string {
