@@ -7,6 +7,18 @@
       }
     },
     {
+      "route": "/assets/workbox-window*",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "route": "/workbox-*",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
       "route": "/sw.js",
       "headers": {
         "Cache-Control": "no-cache"

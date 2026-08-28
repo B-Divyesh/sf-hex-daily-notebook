@@ -10,9 +10,12 @@ describe('static response policy', () => {
   };
 
   it('caches hashed build assets immutably and keeps the worker fresh', () => {
-    const assets = config.routes.find(({ route }) => route === '/assets/index-*');
+    const immutableRoutes = ['/assets/index-*', '/assets/workbox-window*', '/workbox-*'];
     const worker = config.routes.find(({ route }) => route === '/sw.js');
-    expect(assets?.headers?.['Cache-Control']).toBe('public, max-age=31536000, immutable');
+    for (const route of immutableRoutes) {
+      expect(config.routes.find((candidate) => candidate.route === route)?.headers?.['Cache-Control'])
+        .toBe('public, max-age=31536000, immutable');
+    }
     expect(worker?.headers?.['Cache-Control']).toBe('no-cache');
   });
 
