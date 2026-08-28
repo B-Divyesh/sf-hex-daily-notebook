@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hex-daily-notebook.sociobot.in/sitemap.xml

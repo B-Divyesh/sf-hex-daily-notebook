@@ -26,8 +26,17 @@ test('supports keyboard marking, mode shortcuts, undo, and local restore', async
   await expect(editable).toHaveClass(/filled/);
   await page.keyboard.press('p');
   await expect(page.getByText('PENCIL MODE', { exact: true })).toBeVisible();
+  await page.locator('#hex-board').scrollIntoViewIfNeeded();
+  const box = await page.locator('#hex-board').boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(box!.x + box!.width * 0.5, box!.y + box!.height * 0.5);
+  await page.mouse.down();
+  await page.mouse.move(box!.x + box!.width * 0.62, box!.y + box!.height * 0.58, { steps: 5 });
+  await page.mouse.up();
+  await expect(page.locator('.stroke')).toHaveCount(1);
   await page.reload();
   await expect(page.locator('[data-cell].filled')).toHaveCount(1);
+  await expect(page.locator('.stroke')).toHaveCount(1);
 });
 
 test('has no serious accessibility violations', async ({ page }) => {
@@ -56,4 +65,15 @@ test('legal pages and delayed archive are reachable', async ({ page }) => {
   await page.getByRole('button', { name: 'Archive' }).click();
   await expect(page.getByRole('dialog', { name: 'Released drawings' })).toBeVisible();
   await expect(page.locator('.archive-link')).toHaveCount(21);
+});
+
+test('reopens from the service worker while offline', async ({ page, context }) => {
+  await page.goto('/?day=2026-08-14');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await context.setOffline(true);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Find the hidden ink trace.');
+  await expect(page.getByText('Offline copy')).toBeVisible();
+  await context.setOffline(false);
 });

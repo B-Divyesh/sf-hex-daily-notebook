@@ -158,7 +158,7 @@ function boardMarkup(puzzle: Puzzle, state: SavedState): string {
   }).join('');
   return `<svg id="hex-board" class="hex-board fill" viewBox="0 0 640 600" role="group" aria-label="Hex puzzle grid. Use arrow keys to move and Space to mark a cell.">
     <defs><pattern id="hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(25)"><rect width="12" height="12" fill="#0c6173"/><line x1="0" y1="0" x2="0" y2="12" stroke="#9ef0e8" stroke-width="5"/></pattern></defs>
-    <circle class="construction-ring" cx="320" cy="300" r="282"/><circle class="construction-ring" cx="320" cy="300" r="265"/>
+    <rect class="hit-surface" width="640" height="600"/><circle class="construction-ring" cx="320" cy="300" r="282"/><circle class="construction-ring" cx="320" cy="300" r="265"/>
     <g id="cells">${cells}</g><g id="strokes" aria-hidden="true"></g>
   </svg>`;
 }
@@ -216,7 +216,7 @@ function gamePage(date: string): void {
         </section>
       </div>
       <section class="field-notes" aria-labelledby="field-title">
-        <picture class="field-image"><img src="/assets/blueprint-still-life.webp" width="900" height="600" loading="lazy" decoding="async" alt="A brass compass and pencil resting on a hand-drawn hexagonal blueprint"></picture>
+        <picture class="field-image"><source srcset="/assets/blueprint-still-life.avif" type="image/avif"><img src="/assets/blueprint-still-life.webp" width="900" height="600" loading="lazy" decoding="async" alt="A brass compass and pencil resting on a hand-drawn hexagonal blueprint"></picture>
         <div class="field-copy"><p class="eyebrow">Field note 01</p><h2 id="field-title">Think on the sheet.</h2><p>The scratch layer is part of play, not an afterthought. Draw loops, routes, or reminders anywhere on the grid, erase them freely, and come back later. Nothing is uploaded.</p><details><summary>Rules in full</summary><ol><li>Fill exactly seven cells.</li><li>All seven must be connected through shared edges.</li><li>Each brass pin gives the exact number of adjacent filled cells.</li><li>Pencil lines and × marks are notes; only filled hatching is checked.</li></ol></details><p class="draft-label">Editorial artwork generated for this notebook · no people or brands</p></div>
       </section>
     </main>`);

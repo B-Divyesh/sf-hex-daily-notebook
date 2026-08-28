@@ -6,7 +6,6 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'assets/blueprint-still-life.webp'],
       manifest: {
         name: 'Hex Daily Notebook',
         short_name: 'Hex Notebook',
