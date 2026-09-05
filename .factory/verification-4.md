@@ -86,6 +86,8 @@ Invalid leap-day and future-date requests showed the designed unavailable screen
 
 `/opt/fleet/lib/verify-url.sh` passed on live Home and Demo: each had a title, `lang="en"`, one `<h1>`, a main landmark, no missing image alternatives, no unlabelled buttons, and no browser errors. The repository’s Playwright axe integration reported zero serious or critical WCAG A/AA issues on Home, Demo, Privacy, and Terms in both configured viewports. A direct live axe scan also found zero serious or critical issues on Home and Demo in both fresh viewports. V4-01 is the manual touch-target exception.
 
+The local Lighthouse CLI launcher crashed before it could measure this run. The earlier repair handoff records a 100/100/100/100 live audit, but this verifier does not count that historical result as fresh Lighthouse evidence.
+
 The service worker controlled a fresh phone context after caching. With the context offline, `/demo` reloaded its populated 19-cell sample and displayed the offline banner without console or page errors. Reduced-motion emulation set scrolling to `auto`; keyboard focus reached the diagonal hex neighbor and the skip link.
 
 Live headers include a self-only CSP with `frame-ancestors 'none'`, `X-Frame-Options: DENY`, `no-referrer`, `nosniff`, a restrictive permissions policy, and one-year immutable caching for the hashed JS and CSS. Local and live SHA-256 hashes match for `index.html`, app JS, app CSS, `sw.js`, Workbox, the manifest, and the AVIF. This proves the live runtime is the reviewed implementation rather than the later documentation-only commit.
