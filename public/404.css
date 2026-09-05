@@ -1,0 +1,23 @@
+:root { color-scheme: dark; font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif; color: #f4efd9; background: #052d3a; }
+* { box-sizing: border-box; }
+body { min-width: 320px; min-height: 100vh; margin: 0; background-color: #073b4c; background-image: linear-gradient(rgba(118,215,209,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(118,215,209,.055) 1px, transparent 1px); background-size: 32px 32px; }
+a { color: #9ef0e8; text-underline-offset: .2em; }
+:focus-visible { outline: 3px solid #f4c95d; outline-offset: 3px; }
+.skip-link { position: fixed; left: 12px; top: 12px; z-index: 2; transform: translateY(-160%); padding: 10px 14px; color: #17333a; background: #f4c95d; font-weight: 800; }
+.skip-link:focus { transform: none; }
+header, footer { max-width: 1000px; margin: 0 auto; padding: 24px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: #f4efd9; font-size: 14px; font-weight: 800; letter-spacing: .13em; text-decoration: none; text-transform: uppercase; }
+.brand svg { width: 28px; height: 28px; }
+main { position: relative; max-width: 1000px; min-height: 65vh; margin: 0 auto 48px; padding: clamp(32px, 8vw, 80px); overflow: hidden; border: 1px solid rgba(158,240,232,.48); background: rgba(7,59,76,.96); }
+.code { margin: 0 0 8px; color: #f4c95d; font: 700 13px Consolas, monospace; letter-spacing: .16em; }
+h1 { max-width: 600px; margin: 0; font-size: clamp(2.5rem, 8vw, 5rem); line-height: 1; }
+main > p:not(.code) { max-width: 520px; color: #b9d7d3; font-size: 18px; }
+.action { display: inline-flex; align-items: center; min-height: 48px; margin-top: 16px; padding: 12px 18px; color: #17333a; background: #9ef0e8; font-weight: 800; text-decoration: none; }
+.lost-grid { position: absolute; right: -20px; bottom: -10px; width: min(48%, 420px); color: rgba(118,215,209,.38); transform: rotate(-5deg); }
+.lost-grid .missing { stroke: #ff8c70; stroke-dasharray: 8 8; }
+footer { display: flex; justify-content: space-between; gap: 24px; color: #b9d7d3; font-size: 13px; }
+footer p { margin: 0; }
+footer nav { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+footer a { display: inline-flex; align-items: center; min-height: 44px; }
+@media (max-width: 620px) { .brand span { display: none; } main { margin-inline: 8px; } .lost-grid { position: static; width: 90%; margin-top: 48px; } footer { display: grid; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }

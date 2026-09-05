@@ -14,11 +14,14 @@ export default defineConfig({
         background_color: '#052d3a',
         display: 'standalone',
         start_url: '/',
+        scope: '/',
+        lang: 'en',
+        id: '/',
         icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }]
       },
       workbox: {
         navigateFallback: '/index.html',
-        globPatterns: ['**/*.{js,css,html,svg,webp,avif,json}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,webp,avif,json}'],
         cleanupOutdatedCaches: true
       }
     })

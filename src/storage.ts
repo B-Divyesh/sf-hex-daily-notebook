@@ -1,4 +1,4 @@
-import { CELLS } from './puzzle';
+import { CELLS, isSolved, type Puzzle } from './puzzle';
 
 export type Point = { x: number; y: number };
 export type SavedState = {
@@ -71,4 +71,33 @@ export function loadState(storage: Pick<Storage, 'getItem'>, key: string): LoadR
   } catch {
     return { state: freshState(), repaired: false, unreadable: true };
   }
+}
+
+/** Reconcile type-valid browser data with invariants from the selected puzzle. */
+export function reconcileState(result: LoadResult, puzzle: Puzzle): LoadResult {
+  const state: SavedState = {
+    marks: [...result.state.marks],
+    strokes: result.state.strokes.map((stroke) => stroke.map((point) => ({ ...point }))),
+    elapsed: result.state.elapsed,
+    completed: result.state.completed
+  };
+  let repaired = result.repaired;
+
+  for (const clueIndex of puzzle.clues.keys()) {
+    if (state.marks[clueIndex] !== 0) {
+      state.marks[clueIndex] = 0;
+      repaired = true;
+    }
+  }
+
+  const filledMask = state.marks.reduce(
+    (mask, mark, index) => mask | (mark === 1 ? 1 << index : 0),
+    0
+  );
+  if (state.completed && !isSolved(filledMask, puzzle)) {
+    state.completed = false;
+    repaired = true;
+  }
+
+  return { state, repaired, unreadable: result.unreadable };
 }

@@ -55,6 +55,15 @@ settles from 0.98 scale and completion draws a short border sweep. Nothing
 loops. Under `prefers-reduced-motion`, transforms and smooth scrolling are
 removed and feedback becomes an immediate opacity/state change.
 
+## Product structure
+
+The first screen states the daily puzzle job, names spatial-grid players, and
+puts the sample action before the live board. The board remains the visual
+center rather than becoming a generic marketing hero. A brass demo strip is
+the only persistent layer; it uses the clue-pin color to make sandbox state
+clear without introducing a second visual language. How-to and privacy sections
+continue the drafting-sheet border rhythm below the playable board.
+
 ## Original asset plan and provenance
 
 One generated still-life illustration supports the rules/ritual without
@@ -80,3 +89,7 @@ prompt sidecar live in `assets/src/`, with optimized WebP/AVIF derivatives in
 `public/assets/`. All interface icons and board geometry are original inline
 SVG/CSS authored for this repository.
 
+The 1200×630 social card is a center crop of that generated source image. The
+180px touch icon is an original geometric hex mark drawn from the palette with
+ImageMagick. Both derivatives were produced locally on 5 September 2026 and
+load from the product origin.
