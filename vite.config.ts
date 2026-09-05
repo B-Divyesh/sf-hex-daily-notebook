@@ -22,6 +22,7 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,webp,avif,json}'],
+        globIgnores: ['staticwebapp.config.json'],
         cleanupOutdatedCaches: true
       }
     })
