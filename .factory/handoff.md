@@ -1,12 +1,11 @@
-# Hex Daily Notebook — repair 2 handoff
+# Hex Daily Notebook — verification 4 handoff
 
-- Work order: `hex-daily-notebook-repair-2`
+- Work order: `hex-daily-notebook-verify-4`
 - Live URL: <https://hex-daily-notebook.sociobot.in>
 - Demo URL: <https://hex-daily-notebook.sociobot.in/demo>
-- Implementation SHA deployed: `f6987b189112fa72f5d6a6711c41625bbedf3420`
-- Documentation state: the report-only commit containing this handoff
-- Completed: 5 September 2026 UTC
-- Result: **PASS — no known open product findings**
+- Implementation reviewed: `f6987b189112fa72f5d6a6711c41625bbedf3420`
+- Documentation reviewed: `4476685f56d517d2b540dea75be21a4546e35719`
+- Result: **FAIL — 1 low finding; 0 untested public claims**
 
 ## Outcome
 
@@ -38,8 +37,9 @@ and a designed HTTP 404. Azure now serves AVIF as `image/avif`.
 
 Earlier findings remain resolved: failed saves stay visible, malformed strokes
 recover, 1,201 strokes load, 2026 puzzles do not repeat, six-neighbor keyboard
-movement works, targets are at least 44px, dependencies audit cleanly, hashed
-code assets are immutable, and CSP plus frame denial remain active.
+movement works, dependencies audit cleanly, hashed code assets are immutable,
+and CSP plus frame denial remain active. Verification 4 found the mobile brand
+home link is 28×44 px; see the current known gap below.
 
 ## Clean verification
 
@@ -99,12 +99,21 @@ Live response checks:
 - CSP, frame denial, no-referrer, nosniff, and denied device permissions: present
 - Local and live hashes match for HTML, JS, CSS, and service worker
 
-## Known gaps and next steps
+## Current verification 4 result and next step
 
-No known acceptance gap remains. Human testing with a specific screen reader
-was not available; semantic, focus, keyboard, dialog, and axe checks passed.
-Lighthouse has no lab INP measurement. Keep the current one-replica static
-deployment and rerun the claim suite after any public-copy or behavior change.
+Verification 4 independently reran all 18 claim commands from a clean checkout
+and they all passed. `npm test`, `npm run build`, both audits, and the full
+browser suite also passed (56 passed, 2 intentional skips). Fresh desktop and
+phone live checks confirmed the demo, reset, storage isolation, recovery,
+privacy, offline, routing, headers, and AVIF behavior. The deployed files match
+the reviewed implementation byte-for-byte.
 
-No backend, tenant, SQLite, billing, external integration, or AI feature applies
-to this static, local-first puzzle.
+**One low finding remains.** At a 390 px phone viewport the mobile header home
+link is only 28×44 CSS px because its text label is hidden. The test currently
+asserts only target height, so it misses this width failure. Make the link at
+least 44 px wide, assert both dimensions in the mobile test, then rerun the
+focused target test, all claim commands, and the complete browser suite.
+
+Full evidence and the disposition of every earlier review and verification
+finding are in `.factory/verification-4.md`. Do not declare PASS until the
+mobile target defect is repaired and the finding count is zero.
