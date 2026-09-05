@@ -1,0 +1,128 @@
+[
+  {
+    "id": "demo-sandbox",
+    "claim": "Try it with sample data opens and resets a populated sample without setup.",
+    "where": "home primary action, demo banner",
+    "test": "npm run test:e2e -- --grep @claim:demo-sandbox --project=desktop",
+    "sandbox": "fresh browser context; open home; enter demo in one click; verify three filled cells, two crosses, one pencil line, and reset"
+  },
+  {
+    "id": "free-access",
+    "claim": "The puzzle is free to play.",
+    "where": "home facts, footer, README, terms",
+    "test": "npm run test:e2e -- --grep @claim:free-access --project=desktop",
+    "sandbox": "fresh demo; mark a cell and use the complete puzzle without a payment step"
+  },
+  {
+    "id": "deterministic-date",
+    "claim": "The same date creates the same puzzle.",
+    "where": "README",
+    "test": "npm run test:e2e -- --grep @claim:deterministic-date --project=desktop",
+    "sandbox": "two independent fresh browser contexts; compare the demo puzzle clue positions and values"
+  },
+  {
+    "id": "unique-solution",
+    "claim": "Each daily puzzle has one solution.",
+    "where": "puzzle details, README",
+    "test": "npm run test:e2e -- --grep @claim:unique-solution --project=desktop",
+    "sandbox": "fresh demo; enumerate all connected seven-cell candidates and complete the sole accepted solution"
+  },
+  {
+    "id": "fresh-daily",
+    "claim": "Each local calendar date has a different puzzle during the year.",
+    "where": "home date label, README",
+    "test": "npm run test:e2e -- --grep @claim:fresh-daily --project=desktop",
+    "sandbox": "fresh demo; generate every 2026 date and verify 365 distinct answer masks and clue signatures"
+  },
+  {
+    "id": "seven-connected-clues",
+    "claim": "Fill seven connected cells that satisfy every numbered neighbor clue.",
+    "where": "puzzle instructions, rules, README",
+    "test": "npm run test:e2e -- --grep @claim:seven-connected-clues --project=desktop",
+    "sandbox": "fresh demo; check an incomplete answer, then complete the generated answer and verify every constraint is accepted"
+  },
+  {
+    "id": "pencil-layer",
+    "claim": "Pencil mode draws and erases freehand notes.",
+    "where": "tool controls, how it works, README",
+    "test": "npm run test:e2e -- --grep @claim:pencil-layer --project=desktop",
+    "sandbox": "fresh demo; draw a new line with pointer input, then erase that line"
+  },
+  {
+    "id": "cross-not-answer",
+    "claim": "Crosses are notes and do not count as filled answers.",
+    "where": "rules, README",
+    "test": "npm run test:e2e -- --grep @claim:cross-not-answer --project=desktop",
+    "sandbox": "fresh demo; cycle a blank cell to filled and then crossed; verify the filled count returns to its prior value"
+  },
+  {
+    "id": "keyboard-six",
+    "claim": "Keyboard controls reach all six neighboring cells and operate the tools.",
+    "where": "keyboard help, rules, README",
+    "test": "npm run test:e2e -- --grep @claim:keyboard-six --project=desktop",
+    "sandbox": "fresh demo; move from the center to each direct neighbor and use Space, P, F, and U"
+  },
+  {
+    "id": "touch-play",
+    "claim": "The puzzle works with touch input.",
+    "where": "README",
+    "test": "npm run test:e2e -- --grep @claim:touch-play --project=mobile",
+    "sandbox": "fresh 390 by 844 touch-enabled browser context; tap an editable demo cell and verify it fills"
+  },
+  {
+    "id": "archive-delay",
+    "claim": "Archive puzzles become available after seven days.",
+    "where": "archive dialog, README",
+    "test": "npm run test:e2e -- --grep @claim:archive-delay --project=desktop",
+    "sandbox": "start in demo; leave for the daily puzzle; open the archive; verify day seven opens and day six remains unavailable"
+  },
+  {
+    "id": "local-progress",
+    "claim": "Puzzle marks and elapsed time persist in browser storage.",
+    "where": "home facts, privacy, README",
+    "test": "npm run test:e2e -- --grep @claim:local-progress --project=desktop",
+    "sandbox": "fresh demo; add a mark, let the timer advance, reload, and verify both values return"
+  },
+  {
+    "id": "spoiler-free-copy",
+    "claim": "Copy result does not include the answer.",
+    "where": "completion action, README, terms",
+    "test": "npm run test:e2e -- --grep @claim:spoiler-free-copy --project=desktop",
+    "sandbox": "fresh demo; solve it; copy the result; assert three summary lines and no cell, mask, or answer symbols"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "The puzzle works offline after the first visit.",
+    "where": "home facts, offline message, privacy, README",
+    "test": "npm run test:e2e -- --grep @claim:offline-reload --project=desktop",
+    "sandbox": "dedicated fresh browser context; cache the demo; set the context offline; reload and verify the populated puzzle"
+  },
+  {
+    "id": "no-account",
+    "claim": "No account is needed.",
+    "where": "privacy summary, privacy, README, terms",
+    "test": "npm run test:e2e -- --grep @claim:no-account --project=desktop",
+    "sandbox": "fresh demo; reach and change the puzzle without identity fields, sign-in, or account creation"
+  },
+  {
+    "id": "no-tracking",
+    "claim": "The app has no ads, analytics, cookies, or tracking pixels.",
+    "where": "privacy summary, privacy, README",
+    "test": "npm run test:e2e -- --grep @claim:no-tracking --project=desktop",
+    "sandbox": "fresh demo; record the full request stream through interaction and verify no cookies or known tracking endpoints"
+  },
+  {
+    "id": "first-party-only",
+    "claim": "The app loads no third-party scripts, fonts, or services.",
+    "where": "privacy summary, privacy, README",
+    "test": "npm run test:e2e -- --grep @claim:first-party-only --project=desktop",
+    "sandbox": "fresh demo; record every request through network idle and assert the product origin is the only origin"
+  },
+  {
+    "id": "local-only-data",
+    "claim": "Demo and puzzle marks do not leave the browser, and demo changes do not alter daily puzzle data.",
+    "where": "demo banner, home facts, privacy, README",
+    "test": "npm run test:e2e -- --grep @claim:local-only-data --project=desktop",
+    "sandbox": "fresh demo with sentinel real data; mutate and reset the sample; verify only demo session storage changes, no data requests occur, and real data stays unchanged"
+  }
+]

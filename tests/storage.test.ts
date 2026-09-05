@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CELLS } from '../src/puzzle';
-import { decodeState, loadState } from '../src/storage';
+import { CELLS, generatePuzzle } from '../src/puzzle';
+import { decodeState, loadState, reconcileState } from '../src/storage';
 
 const validState = {
   marks: Array(CELLS.length).fill(0),
@@ -39,5 +39,31 @@ describe('local state validation', () => {
     const result = loadState({ getItem: () => { throw new DOMException('denied'); } }, 'key');
     expect(result.unreadable).toBe(true);
     expect(result.state).toEqual(expect.objectContaining({ strokes: [], elapsed: 0, completed: false }));
+  });
+
+  it('clears marks from fixed clue cells', () => {
+    const puzzle = generatePuzzle('2026-08-14');
+    const clue = [...puzzle.clues.keys()][0];
+    const marks = [...validState.marks];
+    marks[clue] = 1;
+    const result = reconcileState({ state: { ...validState, marks }, repaired: false, unreadable: false }, puzzle);
+    expect(result.repaired).toBe(true);
+    expect(result.state.marks[clue]).toBe(0);
+  });
+
+  it('rejects completion unless the current puzzle is solved', () => {
+    const puzzle = generatePuzzle('2026-08-14');
+    const impossible = reconcileState({
+      state: { ...validState, completed: true }, repaired: false, unreadable: false
+    }, puzzle);
+    expect(impossible.repaired).toBe(true);
+    expect(impossible.state.completed).toBe(false);
+
+    const marks = CELLS.map((_, index) => puzzle.targetMask & (1 << index) ? 1 : 0);
+    const solved = reconcileState({
+      state: { ...validState, marks, completed: true }, repaired: false, unreadable: false
+    }, puzzle);
+    expect(solved.repaired).toBe(false);
+    expect(solved.state.completed).toBe(true);
   });
 });
